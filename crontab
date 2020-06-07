@@ -1,0 +1,2 @@
+# root crontab. Insert rocrail.py to /opt/rocrail/
+@reboot python /opt/rocrail/rocrail.py &
