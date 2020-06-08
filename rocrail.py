@@ -1,24 +1,31 @@
 #!/usr/bin/python3
 # Datei /home/pi/reboot.py
-import os, sys, time
+import os, time, syslog
 import RPi.GPIO as gpio
 
-rocd = 0
+rocd_run = 0  #Variable zum Speichern des Status von rocraild
 
-gpio.setmode(gpio.BOARD)   # Pin-Nummern des P1/J8-Headers
-gpio.setup(15, gpio.IN)    # Pin 21 ist mit Reset-Button verbunden
+gpio.setmode(gpio.BOARD)   # Aressen der Stiftleiste
+gpio.setup(15, gpio.IN)    # Pin 15 als Eingang
+
+syslog.openlog(ident="LOG_ROCRAIL.PY",logoption=syslog.LOG_PID, facility=syslog.LOG_LOCAL0)
+
+#Da die Schaltung ein Pullup Widerstand hat, gilt LOW = An, HIGH = Aus
 
 while 1:
-    if gpio.input(15)==gpio.LOW and rocd==0:
+    if gpio.input(15)==gpio.LOW and rocd_run==0:
+        #nur ein mal Befehl senden
         os.system("/etc/init.d/rocraild start")
+        syslog.syslog('rocraid start')
         print ("ON")
-        rocd = 1
-        #sys.exit()
+        rocd_run = 1
+        
     
-    elif gpio.input(15)==gpio.HIGH and rocd==1:
+    elif gpio.input(15)==gpio.HIGH and rocd_run==1:
         os.system("/etc/init.d/rocraild stop")
+        syslog.syslog('rocraid stop')
         print ("OFF")
-        rocd = 0
+        rocd_run = 0
         
     
         
